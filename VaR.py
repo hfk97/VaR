@@ -119,18 +119,6 @@ while not "q" in end:
         results_df.loc[len(results_df)]=[end_date, Ticker, str(confidence) + "%", VaR_hist,VaR_var_covar,years]
 
 
-
-
-
-
-
-
-    #code to check plotting
-    #VaR_hist=0.001
-    #VaR_var_covar=0.01
-    #returns=[np.random.normal(0,0.05) for _ in range(10000)]
-    #Ticker="Test"
-
     for confidence in confidences:
 
         fig = plt.figure()
