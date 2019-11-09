@@ -59,12 +59,13 @@ print("\n")
 end=""
 
 
-results_df = pd.DataFrame(columns=["Date","Ticker","Confidence Level","Historical VaR","Var-Covar VaR","Sample Years"])
+results_df = pd.DataFrame(columns=["Date","Ticker","Confidence Level","Timeframe (days)","Sample Years","Historical VaR","Expected Shortfall (historical)","Var-Covar VaR","Expected Shortfall (Var-Covar)"])
 
 while not "q" in end:
 
     Ticker=input("Type in a valid ticker for the VaR calculation and hit enter: ")
     years=int(input("How many years do you want to consider for the return sample (e.g. 5): "))
+    days = int(input("Select the number of days you want to calculate the VaR for (Trading days): "))
 
     #set start and end date for the last five years
     now = datetime.datetime.now()
@@ -102,21 +103,33 @@ while not "q" in end:
     for confidence in confidences:
 
         #make sure no queries are run twice
-        if not results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level'] == str(confidence) + "%") & (results_df["Sample Years"] == years)].empty:
+        if not results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level'] == str(confidence) + "%") & (results_df['Timeframe (days)'] == days) &(results_df["Sample Years"] == years)].empty:
             print("The following query has already been run and will be skipped")
-            print(results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level'] == str(confidence) + "%") & (results_df["Sample Years"] == years)])
+            print(results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level'] == str(confidence) + "%")& (results_df['Timeframe (days)'] == days) & (results_df["Sample Years"] == years)])
             continue
 
-        #Historical method
-        VaR_hist=np.quantile(returns,1-(confidence/100))
+        alpha=(1-(confidence/100))
 
+        #Historical method
+        VaR_hist=-np.quantile(returns,alpha)
+
+        #Expected Shortfall
+        ES_hist=-returns[returns<-VaR_hist].mean()
+
+        VaR_hist*=np.sqrt(days)
+        ES_hist*=np.sqrt(days)
 
         #Variance-covariance method
-        VaR_var_covar=norm.ppf(1-(confidence/100),mean,std_dev)
+        VaR_var_covar=norm.ppf(1-alpha)*std_dev-mean
+        ES_var_covar =alpha**-1 * norm.pdf(norm.ppf(alpha))*std_dev-mean
+
+
+        VaR_var_covar*=np.sqrt(days)
+        ES_var_covar*=np.sqrt(days)
 
 
 
-        results_df.loc[len(results_df)]=[end_date, Ticker, str(confidence) + "%", VaR_hist,VaR_var_covar,years]
+        results_df.loc[len(results_df)]=[end_date, Ticker, str(confidence) + "%",days,years,VaR_hist,ES_hist,VaR_var_covar,ES_var_covar]
 
 
     for confidence in confidences:
@@ -127,13 +140,13 @@ while not "q" in end:
         plt.title('Value at risk for ' + str(Ticker))
 
         # Density Plot and Histogram of all arrival delays
-        sns.distplot(returns, hist=True, kde=True,
+        sns.distplot(returns*np.sqrt(days), hist=True, kde=True,
                      bins=36, color='#145374',
                      hist_kws={'edgecolor': 'black'},
                      kde_kws={'linewidth': 3})
 
-        ax.axvline(x=results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level'] == str(confidence)+"%") & (results_df["Sample Years"] == years),["Historical VaR"]].values, color='#af0404', linestyle='-', label=str(round(100-confidence,2))+"% VaR historical method", linewidth=2)
-        ax.axvline(x=results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level']== str(confidence)+"%")& (results_df["Sample Years"] == years),["Var-Covar VaR"] ].values, color='#f1bc31', linestyle='-', label=str(round(100-confidence,2))+"% VaR variance-covariance method",
+        ax.axvline(x=- results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level'] == str(confidence)+"%") & (results_df["Sample Years"] == years),["Historical VaR"]].values, color='#af0404', linestyle='-', label=str(round(100-confidence,2))+"% VaR historical method", linewidth=2)
+        ax.axvline(x=- results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == Ticker) & (results_df['Confidence Level']== str(confidence)+"%")& (results_df["Sample Years"] == years),["Var-Covar VaR"] ].values, color='#f1bc31', linestyle='-', label=str(round(100-confidence,2))+"% VaR variance-covariance method",
                    linewidth=2)
         plt.xlabel('Return')
         plt.ylabel('Frequency')
