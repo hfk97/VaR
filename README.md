@@ -1,6 +1,6 @@
 # Value at risk
 
-<p align="center"><img src="./VaR_Exmpl_AAPL.png" alt="Value at risk example" title="Example value at risk calculation (AAPL)" width="640" height="480" align="middle" /></p>
+<p align="center"><img src="./VaR_Exmpl_INTC.png" alt="Value at risk example" title="Example value at risk calculation (INTC)" width="640" height="480" align="middle" /></p>
 
 "VaR.py" allows the user to calculate historical and variance-covariance value at risk and expected shortfall (CVaR) for any given ticker covered by yahoo. "VaR.py" allows the user to:
 
