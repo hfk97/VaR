@@ -90,8 +90,6 @@ def main():
 
             # Historical method
             VaR_hist = var_hist(returns, confidence, days)
-
-            # Expected Shortfall
             ES_hist = cvar_hist(returns, VaR_hist, days)
 
             # Variance-covariance method
