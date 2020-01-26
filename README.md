@@ -7,7 +7,7 @@
 <ul>
 <li>select ticker,</li>
 <li>select the sample size in years,</li>
-<li>select the confidence intervall(s),</li>
+<li>select the confidence interval(s),</li>
 <li>select the VaR horizon (in trading days),</li>
 <li>export the data to csv and</li>
 <li>run multiple queries.</li>
