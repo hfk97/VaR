@@ -26,8 +26,6 @@ plt = getpack("matplotlib.pyplot")
 np = getpack("numpy")
 datetime = getpack("datetime")
 sns = getpack("seaborn")
-scipy = getpack("scipy")
-from scipy.stats import norm
 subprocess.call([sys.executable, "-m", "pip", "install", "pandas-datareader"], stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL)
 from pandas_datareader import data
@@ -124,6 +122,17 @@ def main():
                                           (results_df["Sample Years"] == years), ["Var-Covar VaR"] ].values, color='#f1bc31',
                        linestyle='-', label=str(round(100-confidence, 2))+"% VaR variance-covariance method", linewidth=2)
 
+            # plot CVaR
+            ax.axvline(x=- results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == ticker) &
+                                          (results_df['Confidence Level'] == str(confidence)+"%") &
+                                          (results_df["Sample Years"] == years), ["Expected Shortfall (historical)"]].values, color='black',
+                       linestyle='-', label=str(round(100-confidence, 2))+"% ES (historical)", linewidth=2, alpha=0.5)
+
+            ax.axvline(x=- results_df.loc[(results_df['Date'] == end_date) & (results_df['Ticker'] == ticker) &
+                                          (results_df['Confidence Level'] == str(confidence)+"%") &
+                                          (results_df["Sample Years"] == years), ["Expected Shortfall (Var-Covar)"]].values, color='grey',
+                       linestyle='-', label=str(round(100-confidence, 2))+"% ES (Var-Covar)", linewidth=2, alpha=0.5)
+
             plt.xlabel('Return')
             plt.ylabel('Frequency')
             plt.margins(0)
@@ -134,7 +143,7 @@ def main():
                              box.width, box.height])
 
             # Put a legend below current axis
-            ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+            ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1),
                       fancybox=True, shadow=True, ncol=2)
 
             mean = returns.mean()

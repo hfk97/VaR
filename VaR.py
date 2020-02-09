@@ -44,6 +44,7 @@ def var_vcov(returns, confidence, days):
 
 # Expected Shortfall historical method
 def cvar_hist(returns, var_hist, days):
+    var_hist /= np.sqrt(days)
     es_hist = -returns[returns < -var_hist].mean()
     es_hist *= np.sqrt(days)
     return es_hist
